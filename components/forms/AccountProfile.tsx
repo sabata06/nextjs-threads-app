@@ -15,6 +15,8 @@ import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { UserValidation } from "@/lib/validations/user";
 import Image from "next/image";
+import { ChangeEvent } from "react";
+import { Textarea } from "../ui/textarea";
 
 interface Props {
   user: {
@@ -38,6 +40,13 @@ const AccountProfile = ({ user, btnTitle }: Props) => {
       bio: "",
     },
   });
+
+  const handleImage = (
+    e: ChangeEvent,
+    fieldChange: (value: string) => void
+  ) => {
+    e.preventDefault();
+  };
 
   function onSubmit(values: z.infer<typeof UserValidation>) {
     // Do something with the form values.
@@ -77,13 +86,58 @@ const AccountProfile = ({ user, btnTitle }: Props) => {
                   />
                 )}
               </FormLabel>
-              <FormControl>
-                <Input placeholder="shadcn" {...field} />
+              <FormControl className="flex-1 text-base-semibold text-gray-200">
+                <Input
+                  accept="image/*"
+                  type="file"
+                  placeholder="shadcn"
+                  {...field}
+                  className="account-form_image-input"
+                  onChange={(e) => handleImage(e, field.onChange)}
+                />
               </FormControl>
-              <FormDescription>
-                This is your public display name.
-              </FormDescription>
-              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem className="flex items-center gap-3 w-full">
+              <FormLabel className="text-base-semiboldtext-light-2">
+                Name
+              </FormLabel>
+              <FormControl className="flex-1 text-base-semibold text-gray-200">
+                <Input type="text" {...field} className="account-form_input" />
+              </FormControl>
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="username"
+          render={({ field }) => (
+            <FormItem className="flex items-center gap-3 w-full">
+              <FormLabel className="text-base-semiboldtext-light-2">
+                Username
+              </FormLabel>
+              <FormControl className="flex-1 text-base-semibold text-gray-200">
+                <Input type="text" {...field} className="account-form_input" />
+              </FormControl>
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="bio"
+          render={({ field }) => (
+            <FormItem className="flex items-center gap-3 w-full">
+              <FormLabel className="text-base-semiboldtext-light-2">
+                Bio
+              </FormLabel>
+              <FormControl className="flex-1 text-base-semibold text-gray-200">
+                <Textarea rows={10} {...field} className="account-form_input" />
+              </FormControl>
             </FormItem>
           )}
         />
