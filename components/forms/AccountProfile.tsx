@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { UserValidation } from "@/lib/validations/user";
 import Image from "next/image";
-import { ChangeEvent } from "react";
+import { ChangeEvent, useState } from "react";
 import { Textarea } from "../ui/textarea";
 
 interface Props {
@@ -31,21 +31,33 @@ interface Props {
 }
 
 const AccountProfile = ({ user, btnTitle }: Props) => {
+  const [files, setFiles] = useState<File[]>([]);
   const form = useForm({
     resolver: zodResolver(UserValidation),
     defaultValues: {
-      profile_photo: "",
-      name: "",
-      username: "",
-      bio: "",
+      profile_photo: user?.image || "",
+      name: user?.name || "",
+      username: user?.username || "",
+      bio: user?.bio || "",
     },
   });
 
   const handleImage = (
-    e: ChangeEvent,
+    e: ChangeEvent<HTMLInputElement>,
     fieldChange: (value: string) => void
   ) => {
     e.preventDefault();
+    const fileReader = new FileReader();
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+      setFiles(Array.from(e.target.files));
+      if (!file.type.includes("image")) return;
+      fileReader.onload = async (event) => {
+        const imageDataUrl = event.target?.result?.toString() || "";
+        fieldChange(imageDataUrl);
+      };
+      fileReader.readAsDataURL(file);
+    }
   };
 
   function onSubmit(values: z.infer<typeof UserValidation>) {
@@ -57,8 +69,8 @@ const AccountProfile = ({ user, btnTitle }: Props) => {
   return (
     <Form {...form}>
       <form
-        onSubmit={form.handleSubmit(onSubmit)}
         className="flex flex-col justify-start gap-10"
+        onSubmit={form.handleSubmit(onSubmit)}
       >
         <FormField
           control={form.control}
@@ -69,7 +81,7 @@ const AccountProfile = ({ user, btnTitle }: Props) => {
                 {field.value ? (
                   <Image
                     src={field.value}
-                    alt="profile_photo"
+                    alt="profile_icon"
                     width={96}
                     height={96}
                     priority
@@ -78,20 +90,18 @@ const AccountProfile = ({ user, btnTitle }: Props) => {
                 ) : (
                   <Image
                     src="/assets/profile.svg"
-                    alt="profile_photo"
+                    alt="profile_icon"
                     width={24}
                     height={24}
-                    priority
-                    className="rounded-full object-contain"
+                    className="object-contain"
                   />
                 )}
               </FormLabel>
               <FormControl className="flex-1 text-base-semibold text-gray-200">
                 <Input
-                  accept="image/*"
                   type="file"
-                  placeholder="shadcn"
-                  {...field}
+                  accept="image/*"
+                  placeholder="Add profile photo"
                   className="account-form_image-input"
                   onChange={(e) => handleImage(e, field.onChange)}
                 />
@@ -99,50 +109,69 @@ const AccountProfile = ({ user, btnTitle }: Props) => {
             </FormItem>
           )}
         />
+
         <FormField
           control={form.control}
           name="name"
           render={({ field }) => (
-            <FormItem className="flex items-center gap-3 w-full">
-              <FormLabel className="text-base-semiboldtext-light-2">
+            <FormItem className="flex w-full flex-col gap-3">
+              <FormLabel className="text-base-semibold text-light-2">
                 Name
               </FormLabel>
-              <FormControl className="flex-1 text-base-semibold text-gray-200">
-                <Input type="text" {...field} className="account-form_input" />
+              <FormControl>
+                <Input
+                  type="text"
+                  className="account-form_input no-focus"
+                  {...field}
+                />
               </FormControl>
+              <FormMessage />
             </FormItem>
           )}
         />
+
         <FormField
           control={form.control}
           name="username"
           render={({ field }) => (
-            <FormItem className="flex items-center gap-3 w-full">
-              <FormLabel className="text-base-semiboldtext-light-2">
+            <FormItem className="flex w-full flex-col gap-3">
+              <FormLabel className="text-base-semibold text-light-2">
                 Username
               </FormLabel>
-              <FormControl className="flex-1 text-base-semibold text-gray-200">
-                <Input type="text" {...field} className="account-form_input" />
+              <FormControl>
+                <Input
+                  type="text"
+                  className="account-form_input no-focus"
+                  {...field}
+                />
               </FormControl>
+              <FormMessage />
             </FormItem>
           )}
         />
+
         <FormField
           control={form.control}
           name="bio"
           render={({ field }) => (
-            <FormItem className="flex items-center gap-3 w-full">
-              <FormLabel className="text-base-semiboldtext-light-2">
+            <FormItem className="flex w-full flex-col gap-3">
+              <FormLabel className="text-base-semibold text-light-2">
                 Bio
               </FormLabel>
-              <FormControl className="flex-1 text-base-semibold text-gray-200">
-                <Textarea rows={10} {...field} className="account-form_input" />
+              <FormControl>
+                <Textarea
+                  rows={10}
+                  className="account-form_input no-focus"
+                  {...field}
+                />
               </FormControl>
+              <FormMessage />
             </FormItem>
           )}
         />
-        <Button className="bg-primary-500" type="submit">
-          Submit
+
+        <Button type="submit" className="bg-primary-500">
+          {btnTitle}
         </Button>
       </form>
     </Form>
